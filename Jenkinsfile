@@ -14,7 +14,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main', 
-                url:'https://github.com/sreenivas-shamala/flask-registration.git'
+                url:'https://github.com/sreenivas-shamala/flask-registraion.git'
             }
         }
 
