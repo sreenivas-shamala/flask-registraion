@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
         - name: flask-registration
-          image: flask-registration:v1
-          imagePullPolicy: IfNotPresent
+          image: sreenivasulusamala108/flask-registration:v1
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
 ---
