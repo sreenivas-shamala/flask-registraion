@@ -5,16 +5,16 @@ pipeline {
     environment {
         IMAGE_NAME = "sreenivasulusamala108/flask-registration"
         IMAGE_TAG = "v1"
+        PATH = "/usr/local/bin:${env.PATH}"
     }
 
+        
     stages {
 
         stage('Checkout') {
             steps {
- 
-                git branch: 'main', url:
-                  'https://github.com/sreenivas-shamala/flask-registraion.git'
-
+                git branch: 'main', 
+                url:'https://github.com/sreenivas-shamala/flask-registration.git'
             }
         }
 
@@ -40,7 +40,7 @@ pipeline {
             }
         }
 
- stage('Check kubectl') {
+       stage('Check kubectl') {
     steps {
         sh '''
             echo "PATH=$PATH"
@@ -49,7 +49,7 @@ pipeline {
         '''
     }
 }
- stage('Test Kubernetes') {
+        stage('Test Kubernetes') {
     steps {
         withCredentials([
             file(
@@ -70,11 +70,6 @@ pipeline {
                 echo "===== CONTEXT ====="
                 kubectl config current-context
 
-                echo "===== API SERVER ====="
-                kubectl config view --minify \
-                    -o jsonpath='{.clusters[0].cluster.server}'
-                echo
-
                 echo "===== CLUSTER INFO ====="
                 kubectl cluster-info
 
@@ -84,39 +79,38 @@ pipeline {
         }
     }
 }
-        
+             
         stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([
-            file(
-                credentialsId: 'k8s_config',
-                variable: 'KUBECONFIG'
-            )
-        ]) {
+                withCredentials([file( credentialsId: 'k8s_config', variable: 'KUBECONFIG' )])
+                { 
                 sh '''
-                
-                kubectl apply --validate=false -f flask-registration.yaml
+                               
+                echo "=== Applying deployment ===" 
+                kubectl apply -f flask-registration.yaml
                 '''
+               }  
             }
         }
-        }     
 
         stage('Verify Deployment') {
             steps {
-                withCredentials([
-            file(
-                credentialsId: 'k8s_config',
-                variable: 'KUBECONFIG'
-            )
-        ]) {
+                withCredentials([file( credentialsId: 'k8s_config', variable: 'KUBECONFIG' )])
+                {
                 sh '''
-                kubectl get pods
-                kubectl get services
-                '''
-            }
-        }
-    }
+                
+                kubectl get deployments
 
+                kubectl get pods
+               
+                kubectl get services
+                
+                '''
+                }    
+           
+           }
+      }
+    }
     post {
         success {
             echo "Deployment Successful!"
