@@ -40,17 +40,75 @@ pipeline {
             }
         }
 
+ stage('Check kubectl') {
+    steps {
+        sh '''
+            echo "PATH=$PATH"
+            which kubectl
+            kubectl version --client
+        '''
+    }
+}
+ stage('Test Kubernetes') {
+    steps {
+        withCredentials([
+            file(
+                credentialsId: 'k8s_config',
+                variable: 'KUBECONFIG'
+            )
+        ]) {
+            sh '''
+                set -e
+
+                echo "===== kubectl ====="
+                which kubectl
+                kubectl version --client
+
+                echo "===== KUBECONFIG ====="
+                ls -l "$KUBECONFIG"
+
+                echo "===== CONTEXT ====="
+                kubectl config current-context
+
+                echo "===== API SERVER ====="
+                kubectl config view --minify \
+                    -o jsonpath='{.clusters[0].cluster.server}'
+                echo
+
+                echo "===== CLUSTER INFO ====="
+                kubectl cluster-info
+
+                echo "===== NODES ====="
+                kubectl get nodes
+            '''
+        }
+    }
+}
+        
         stage('Deploy to Kubernetes') {
             steps {
+                withCredentials([
+            file(
+                credentialsId: 'k8s_config',
+                variable: 'KUBECONFIG'
+            )
+        ]) {
                 sh '''
                 
                 kubectl apply --validate=false -f flask-registration.yaml
                 '''
             }
         }
+        }     
 
         stage('Verify Deployment') {
             steps {
+                withCredentials([
+            file(
+                credentialsId: 'k8s_config',
+                variable: 'KUBECONFIG'
+            )
+        ]) {
                 sh '''
                 kubectl get pods
                 kubectl get services
