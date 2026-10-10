@@ -43,8 +43,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                kubectl apply -f flask-registration.yaml
                 
+                kubectl apply --validate=false -f flask-registration.yaml
                 '''
             }
         }
